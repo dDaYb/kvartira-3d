@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!-- kvartira-gate -->
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Квартира — пароль</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #f4f1eb;
+    color: #1c1b19;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+  form {
+    width: min(420px, 100%);
+    background: #faf8f4;
+    border: 1px solid #e0dbd2;
+    border-radius: 12px;
+    padding: 22px;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; }
+  p { margin: 0 0 14px; color: #5c574e; font-size: 14px; line-height: 1.45; }
+  label { display: block; font-size: 13px; margin-bottom: 6px; }
+  input {
+    width: 100%;
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfc8bb;
+    background: #fff;
+  }
+  button {
+    margin-top: 12px;
+    font: inherit;
+    border: 0;
+    background: #1c1b19;
+    color: #f4f1eb;
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  #message { min-height: 1.4em; margin: 10px 0 0; color: #8a3b12; }
+</style>
+</head>
+<body>
+<form id="gate">
+  <h1>Квартира</h1>
+  <p>Страницы и модель зашифрованы. Без пароля файлы сайта не открываются.</p>
+  <label for="password">Пароль</label>
+  <input id="password" name="password" type="password" autocomplete="current-password" required>
+  <button type="submit">Открыть</button>
+  <p id="message" role="status"></p>
+</form>
+<script>
+const PAGE = "svet";
+const form = document.getElementById("gate");
+const message = document.getElementById("message");
+const passwordInput = document.getElementById("password");
+
+function bytesToB64(bytes) {
+  let text = "";
+  for (const byte of bytes) text += String.fromCharCode(byte);
+  return btoa(text);
+}
+
+function b64ToBytes(text) {
+  const raw = atob(text);
+  const bytes = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i);
+  return bytes;
+}
+
+async function derive(password, salt, iterations) {
+  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    material,
+    256
+  );
+  return new Uint8Array(bits);
+}
+
+async function decryptBuffer(rawKey, bytes) {
+  const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: bytes.slice(0, 12), tagLength: 128 },
+    key,
+    bytes.slice(12)
+  );
+  return plain;
+}
+
+async function control() {
+  await navigator.serviceWorker.register("sw.js");
+  if (navigator.serviceWorker.controller) return;
+  await new Promise((resolve) => {
+    navigator.serviceWorker.addEventListener("controllerchange", resolve, { once: true });
+  });
+}
+
+async function unlock(rawKey) {
+  const worker = await navigator.serviceWorker.ready;
+  const channel = new MessageChannel();
+  const done = new Promise((resolve, reject) => {
+    channel.port1.onmessage = (event) => {
+      if (event.data && event.data.ok) resolve();
+      else reject(new Error(event.data && event.data.error || "ключ не принят"));
+    };
+  });
+  worker.active.postMessage({ type: "unlock", rawKey }, [channel.port2]);
+  await done;
+  sessionStorage.setItem("kvartira-key", bytesToB64(rawKey));
+  location.reload();
+}
+
+async function tryPassword(password) {
+  const manifest = await fetch("model/crypt/manifest.json", { cache: "no-store" }).then((response) => {
+    if (!response.ok) throw new Error("нет model/crypt/manifest.json");
+    return response.json();
+  });
+  const salt = b64ToBytes(manifest.salt);
+  const rawKey = await derive(password, salt, manifest.iterations);
+  const probeName = PAGE === "svet" ? "свет.html" : "index.html";
+  const probe = manifest.files[probeName];
+  const response = await fetch("model/crypt/" + probe, { cache: "no-store" });
+  if (!response.ok) throw new Error("нет зашифрованной страницы");
+  await decryptBuffer(rawKey, new Uint8Array(await response.arrayBuffer()));
+  await unlock(rawKey);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  message.textContent = "Проверяю пароль…";
+  tryPassword(passwordInput.value).catch(() => {
+    message.textContent = "Пароль не подошёл.";
+  });
+});
+
+control().then(() => {
+  const saved = sessionStorage.getItem("kvartira-key");
+  if (!saved) return;
+  message.textContent = "Открываю…";
+  unlock(b64ToBytes(saved)).catch(() => {
+    sessionStorage.removeItem("kvartira-key");
+    message.textContent = "";
+  });
+}).catch(() => {
+  message.textContent = "Браузер не включил расшифровку. Нужен адрес сайта по https или localhost, не файл с диска.";
+});
+</script>
+</body>
+</html>

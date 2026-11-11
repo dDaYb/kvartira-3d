@@ -1,0 +1,8 @@
+.DS_Store
+Thumbs.db
+*.blend
+*.blend1
+site-src/
+model/apartment.glb
+model/info.json
+model/группы-света.json

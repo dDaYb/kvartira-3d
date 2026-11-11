@@ -1,0 +1,13 @@
+{
+  "v": 1,
+  "kdf": "PBKDF2-SHA256",
+  "iterations": 600000,
+  "salt": "KCvnW9dO0I3fiwTt6p3Cvg==",
+  "files": {
+    "index.html": "index.html.bin",
+    "свет.html": "svet.html.bin",
+    "model/info.json": "info.json.bin",
+    "model/группы-света.json": "groups.json.bin",
+    "model/apartment.glb": "apartment.glb.bin"
+  }
+}
