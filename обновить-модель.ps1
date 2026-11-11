@@ -32,6 +32,37 @@ if ($LASTEXITCODE -ne 0) {
     throw "Blender exited with code $LASTEXITCODE"
 }
 
+function Get-SitePassword {
+    if ($env:SITE_PASSWORD) { return $env:SITE_PASSWORD }
+    $secure = Read-Host 'Пароль сайта' -AsSecureString
+    if (-not $secure -or $secure.Length -eq 0) {
+        throw 'Пароль пустой. Можно заранее задать переменную SITE_PASSWORD.'
+    }
+    $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+    try { return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+}
+
+$manifest = Join-Path $site 'model\crypt\manifest.json'
+$protected = Test-Path -LiteralPath $manifest
+if ($protected) {
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
+        throw 'Сайт зашифрован, для новой модели нужен Node.js.'
+    }
+    $hadPassword = [bool]$env:SITE_PASSWORD
+    if (-not $hadPassword) { $env:SITE_PASSWORD = Get-SitePassword }
+    try {
+        & node (Join-Path $site 'scripts\encrypt-site.mjs') --only 'model/apartment.glb' --only 'model/info.json'
+        if ($LASTEXITCODE -ne 0) { throw "Шифрование завершилось с кодом $LASTEXITCODE" }
+    }
+    finally {
+        if (-not $hadPassword) { Remove-Item Env:SITE_PASSWORD -ErrorAction SilentlyContinue }
+    }
+}
+else {
+    Write-Host 'Сайт ещё не закрыт паролем. В git попадёт открытый GLB. Закрыть: node scripts/encrypt-site.mjs'
+}
+
 if ($Local) {
     Write-Host "Updated locally: $glb"
     exit 0
@@ -39,8 +70,14 @@ if ($Local) {
 
 Push-Location -LiteralPath $site
 try {
-    git add -- 'model/apartment.glb' 'model/info.json'
-    $pending = git status --porcelain -- 'model/apartment.glb' 'model/info.json'
+    if ($protected) {
+        git add -- 'model/crypt/apartment.glb.bin' 'model/crypt/info.json.bin' 'model/crypt/manifest.json'
+        $pending = git status --porcelain -- 'model/crypt/apartment.glb.bin' 'model/crypt/info.json.bin' 'model/crypt/manifest.json'
+    }
+    else {
+        git add -- 'model/apartment.glb' 'model/info.json'
+        $pending = git status --porcelain -- 'model/apartment.glb' 'model/info.json'
+    }
     if (-not $pending) {
         Write-Host 'GLB is unchanged. Nothing to push.'
         exit 0

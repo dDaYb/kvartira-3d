@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Квартира — свет по листу 10</title>
-<link rel="icon" href="data:,">
+<title>Квартира — выключатели и свет</title>
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -14,139 +13,100 @@
     background: #f4f1eb;
     color: #1c1b19;
     display: flex;
+    flex-direction: column;
     min-height: 100%;
   }
-  a { color: #6d4c2a; }
+  header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    align-items: flex-end;
+    padding: 16px 22px 10px;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  a { color: #3d4a38; }
+  p { margin: 0; color: #5c574e; font-size: 14px; line-height: 1.45; }
+  #status { text-align: right; font-size: 13px; color: #5c574e; max-width: 460px; }
+  main { flex: 1; display: flex; min-height: 0; }
+  #view { flex: 1; position: relative; min-width: 0; background: #ebe6dc; }
+  #view canvas { display: block; width: 100%; height: 100%; }
   aside {
-    width: 400px;
-    flex: none;
+    width: 340px;
     overflow: auto;
-    padding: 18px 18px 28px;
-    border-right: 1px solid #e0d9cc;
-    background: #f7f4ee;
+    border-left: 1px solid #e0dbd2;
+    background: #faf8f4;
+    padding: 12px 14px 24px;
   }
-  h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; }
-  h2 { font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: #6d675e; margin: 18px 0 8px; }
-  .lead, .note, .meta { margin: 0; color: #5c574e; font-size: 14px; line-height: 1.45; }
-  .status {
-    margin-top: 10px;
-    padding: 10px 12px;
-    background: #fff;
-    border: 1px solid #e0d9cc;
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.45;
-  }
-  .legend { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
-  .legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #3c3832; }
-  .swatch { width: 14px; height: 14px; border-radius: 50%; flex: none; display: inline-block; }
-  .swatch.model { background: #d4d0c6; box-shadow: inset 0 0 0 2px #8a847a; }
-  .swatch.sheet { background: #d4d0c6; box-shadow: 0 0 0 2px #2f7d4f; }
-  .swatch.ask { background: #e07a2f; }
-  .swatch.light { background: #e6c36a; }
-  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  button {
+  button, .key {
     font: inherit;
-    font-size: 13px;
-    border: 1px solid #d9d1c3;
-    background: #fff;
-    color: #1c1b19;
-    border-radius: 999px;
-    padding: 4px 10px;
     cursor: pointer;
   }
-  button[aria-pressed="true"], button.primary { background: #1c1b19; color: #f4f1eb; border-color: #1c1b19; }
-  .post, .channel {
-    width: 100%;
-    text-align: left;
+  #all-off, .key {
+    border: 1px solid #cfc8bb;
+    background: #fff;
     border-radius: 8px;
-    padding: 8px 10px;
-    margin: 0 0 6px;
-    display: block;
+    padding: 6px 10px;
   }
-  .post small, .channel small { display: block; color: #6d675e; font-size: 12px; margin-top: 2px; }
-  .post.ask { border-color: #e07a2f; background: #fff6ee; }
-  .post.sheet { border-color: #2f7d4f; }
-  .post.active, .channel.active { outline: 2px solid #1c1b19; }
-  .badge {
+  #all-off { margin: 8px 0 12px; }
+  #all-off:hover, .key:hover { border-color: #8a9178; }
+  .key.on {
+    background: #f3e2c4;
+    border-color: #c4a36a;
+  }
+  .post { margin: 0 0 12px; }
+  .post h2 { font-size: 14px; margin: 0 0 2px; }
+  .place, .note { font-size: 12px; color: #6d675e; margin: 0 0 6px; }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px; }
+  .post.active { outline: 1px solid #c4a36a; border-radius: 8px; padding: 6px; margin-left: -6px; }
+  .post.ask { background: #fff6ee; border-radius: 8px; padding: 6px; box-shadow: inset 3px 0 0 #e07a2f; }
+  .post.sheet { border-radius: 8px; padding: 6px; box-shadow: inset 3px 0 0 #2f7d4f; }
+  .badge-ask {
     display: inline-block;
+    background: #e07a2f;
+    color: #fff;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 650;
-    letter-spacing: 0.02em;
     padding: 1px 6px;
-    border-radius: 999px;
-    margin-left: 6px;
-    vertical-align: 1px;
+    margin: 0 0 6px;
   }
-  .badge.ask { background: #e07a2f; color: #fff; }
-  .badge.sheet { background: #2f7d4f; color: #fff; }
-  .badge.guess { background: #efe6c8; color: #5c4a12; }
-  #detail {
-    margin-top: 8px;
-    padding: 10px 12px;
-    background: #fff;
-    border: 1px solid #e0d9cc;
-    border-radius: 8px;
-  }
-  #detail h3 { margin: 0 0 6px; font-size: 16px; }
-  #detail p { margin: 6px 0 0; }
-  #view { flex: 1; position: relative; min-width: 0; min-height: 320px; background: #ebe6dc; }
-  #view canvas { display: block; width: 100%; height: 100%; }
-  #load {
-    position: absolute;
-    left: 16px;
-    bottom: 16px;
-    margin: 0;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 8px;
-    font-size: 13px;
-    color: #3c3832;
-  }
-  .toolbar {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    display: flex;
-    gap: 6px;
-  }
+  .legend { list-style: none; padding: 0; margin: 0 0 12px; }
+  .legend li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #3c3832; margin: 0 0 4px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .dot.sheet { background: #d4d0c6; box-shadow: 0 0 0 2px #2f7d4f; }
+  .dot.ask { background: #e07a2f; }
+  .dot.lit { background: #ffb000; }
+  #picked { font-size: 13px; min-height: 2.6em; margin: 0 0 8px; }
   @media (max-width: 860px) {
-    body { flex-direction: column; }
-    aside { width: auto; max-height: 46vh; border-right: 0; border-bottom: 1px solid #e0d9cc; }
-    #view { min-height: 54vh; }
+    header { flex-direction: column; align-items: flex-start; }
+    #status { text-align: left; }
+    main { flex-direction: column; }
+    aside { width: auto; max-height: 42vh; border-left: 0; border-top: 1px solid #e0dbd2; }
+    #view { min-height: 52vh; }
   }
 </style>
 </head>
 <body>
-<aside>
-  <p class="meta"><a href="index.html">К модели квартиры</a></p>
-  <h1>Свет по листу 10</h1>
-  <p class="lead">Посты выключателей и группы светильников. Клик по корпусу в модели или по строке слева.</p>
-  <p id="sheet-status" class="status">Загрузка раскладки…</p>
-  <h2>Легенда</h2>
-  <ul class="legend">
-    <li><i class="swatch model"></i> Пост в модели, меш «P19 Выключатель»</li>
-    <li><i class="swatch sheet"></i> Пост по листу 10: меша нет, стоит маркер-корпус</li>
-    <li><i class="swatch ask"></i> Уточнить у АДС</li>
-    <li><i class="swatch light"></i> Светильник группы</li>
-  </ul>
-  <div id="detail" hidden></div>
-  <h2>Посты</h2>
-  <div class="filters" id="filters">
-    <button type="button" data-filter="all" aria-pressed="true">Все</button>
-    <button type="button" data-filter="ask">Уточнить у АДС</button>
-    <button type="button" data-filter="sheet">По листу 10</button>
+<header>
+  <div>
+    <h1>Выключатели и свет</h1>
+    <p>Щелчок по выключателю или по клавише в списке зажигает его канал. Повторный щелчок гасит. <a href="index.html">Объём квартиры</a></p>
   </div>
-  <div id="posts"></div>
-  <h2>Группы светильников</h2>
-  <div id="channels"></div>
-</aside>
-<div id="view">
-  <div class="toolbar">
-    <button type="button" id="home" class="primary">Вся квартира</button>
-  </div>
-  <p id="load">Загрузка модели…</p>
-</div>
+  <p id="status">Загрузка модели…</p>
+</header>
+<main>
+  <div id="view"></div>
+  <aside>
+    <p id="picked">Выберите выключатель на модели или клавишу в списке.</p>
+    <button id="all-off" type="button">Погасить весь свет</button>
+    <ul class="legend">
+      <li><i class="dot lit"></i> Светильник канала включён</li>
+      <li><i class="dot sheet"></i> Пост по листу 10: в модели нет меша, стоит маркер-корпус</li>
+      <li><i class="dot ask"></i> Уточнить у АДС</li>
+    </ul>
+    <div id="posts"></div>
+  </aside>
+</main>
 <script type="importmap">
 {
   "imports": {
@@ -160,715 +120,406 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const ASK = "уточнить у АДС";
-const statusEl = document.getElementById("sheet-status");
+const status = document.getElementById("status");
+const picked = document.getElementById("picked");
 const postsEl = document.getElementById("posts");
-const channelsEl = document.getElementById("channels");
-const detailEl = document.getElementById("detail");
-const loadEl = document.getElementById("load");
 const view = document.getElementById("view");
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xebe6dc);
-const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 80);
+const plan = await fetch("model/группы-света.json", { cache: "no-store" }).then((response) => {
+  if (!response.ok) throw new Error(String(response.status));
+  return response.json();
+});
+status.textContent = plan.status;
+
+const on = new Set();
+const channelById = new Map(plan.channels.map((channel) => [channel.id, channel]));
+const postsByMesh = new Map();
+const switchMeshes = new Map();
+const channelNodes = new Map();
+
+function sanitizeNodeName(name) {
+  return String(name).replace(/\s/g, "_").replace(/[\[\]\.\:\/]/g, "");
+}
+
+function rememberPost(name, post) {
+  if (!name) return;
+  postsByMesh.set(name, post);
+  postsByMesh.set(sanitizeNodeName(name), post);
+}
+
+for (const post of plan.posts) rememberPost(post.mesh, post);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 0.9;
 view.appendChild(renderer.domElement);
 
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.add(new THREE.HemisphereLight(0xfff4e8, 0xc9bfb2, 0.55));
-const sun = new THREE.DirectionalLight(0xffffff, 1.15);
-sun.position.set(6, 12, 3);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xebe6dc);
+scene.add(new THREE.AmbientLight(0xfff6ea, 0.55));
+const sun = new THREE.DirectionalLight(0xfff4e5, 1.15);
+sun.position.set(6, 10, 4);
 scene.add(sun);
 
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 80);
+camera.position.set(8, 11, 8);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.target.set(5.4, 0.9, -6.2);
-camera.position.set(11.5, 8.2, -1.2);
+controls.target.set(4.5, 1.2, -6);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-const clickable = [];
-const byName = new Map();
-const channelMarkers = [];
-const restorations = [];
-let layout = null;
-let apartment = null;
-let filter = "all";
-let selectedPost = null;
-let selectedChannel = null;
-let home = { pos: camera.position.clone(), target: controls.target.clone() };
-const goal = { pos: null, target: null };
+let downX = 0;
+let downY = 0;
 
 function resize() {
-  const w = view.clientWidth;
-  const h = view.clientHeight;
-  camera.aspect = w / Math.max(h, 1);
+  const width = view.clientWidth;
+  const height = view.clientHeight;
+  camera.aspect = width / Math.max(height, 1);
   camera.updateProjectionMatrix();
-  renderer.setSize(w, h, false);
+  renderer.setSize(width, height, false);
 }
 window.addEventListener("resize", resize);
 resize();
 
-function gangsWord(n) {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return n + " клавиша";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return n + " клавиши";
-  return n + " клавиш";
+function cloneMaterial(mesh) {
+  const source = mesh.material;
+  const material = (Array.isArray(source) ? source[0] : source).clone();
+  mesh.material = material;
+  if (material.emissive) material.userData.base = material.emissive.clone();
+  if (material.color) material.userData.baseColor = material.color.clone();
+  return material;
 }
 
-function postName(post) {
-  if (post.code) return post.code;
-  if (post.housing) return "Корпус " + post.housing;
-  return post.id;
+function paintMesh(mesh, lit) {
+  const material = mesh.material;
+  if (!material.emissive) return;
+  const base = material.userData.base || new THREE.Color(0x000000);
+  const baseColor = material.userData.baseColor;
+  material.emissive.copy(lit ? new THREE.Color(0xffb347) : base);
+  material.emissiveIntensity = lit ? 14 : (material.userData.baseIntensity ?? 1);
+  if (baseColor) material.color.copy(lit ? new THREE.Color(0xffd9a0) : baseColor);
 }
 
-function isSheet(post) {
-  return !post.mesh && Array.isArray(post.at);
+function keyChannels(key) {
+  if (Array.isArray(key.channels) && key.channels.length) return key.channels;
+  if (key.channel) return [key.channel];
+  return [];
 }
 
-function findData(object, key) {
-  let node = object;
-  while (node) {
-    if (node.userData && node.userData[key]) return node.userData[key];
-    node = node.parent;
+function findMesh(byName, name) {
+  if (!name) return null;
+  return byName.get(name) || byName.get(sanitizeNodeName(name)) || null;
+}
+
+function bindSwitch(mesh, post) {
+  const material = mesh.material && mesh.material.userData && mesh.material.userData.base
+    ? mesh.material
+    : cloneMaterial(mesh);
+  material.userData.baseIntensity = material.emissiveIntensity ?? 1;
+  if (post.status === ASK && material.color) {
+    material.color.set(0xe07a2f);
+    material.userData.baseColor = material.color.clone();
+    material.userData.ask = true;
   }
-  return null;
+  switchMeshes.set(mesh.name, mesh);
+  rememberPost(mesh.name, post);
+  mesh.userData.post = post.id;
+  mesh.userData.meshKey = mesh.name;
 }
 
-function makeLabel(text, color) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 128;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "rgba(28, 27, 25, 0.88)";
-  ctx.beginPath();
-  if (!ctx.roundRect) {
-    ctx.rect(8, 24, 496, 80);
-  } else {
-    ctx.roundRect(8, 24, 496, 80, 18);
+function ensureChannel(channel) {
+  if (channelNodes.has(channel.id)) return channelNodes.get(channel.id);
+  const group = new THREE.Group();
+  group.name = channel.id;
+  const markers = [];
+  for (const marker of channel.markers || []) {
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.11, 18, 12),
+      new THREE.MeshBasicMaterial({ color: 0xb7b1a6, transparent: true, opacity: 0.4, depthTest: false })
+    );
+    dot.renderOrder = 3;
+    dot.position.set(marker.at[0], marker.at[1], marker.at[2]);
+    dot.userData.channel = channel.id;
+    dot.userData.fixture = marker.id;
+    dot.name = marker.id;
+    group.add(dot);
+    markers.push(dot);
   }
-  ctx.fill();
-  ctx.fillStyle = color;
-  ctx.font = "600 44px sans-serif";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, 28, 64);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false }));
-  sprite.scale.set(0.46, 0.115, 1);
-  sprite.raycast = () => {};
-  return sprite;
+  const light = new THREE.PointLight(0xffd7a1, 0, 4.5, 2);
+  if (markers.length) {
+    const box = new THREE.Box3();
+    for (const marker of markers) box.expandByPoint(marker.position);
+    box.getCenter(light.position);
+  }
+  group.add(light);
+  scene.add(group);
+  const record = { group, markers, light, meshes: [] };
+  channelNodes.set(channel.id, record);
+  return record;
 }
 
-function addRing(position, color, normal, postId) {
-  const open = openSide(position, normal);
+function applyChannel(channel) {
+  const lit = on.has(channel.id);
+  const record = ensureChannel(channel);
+  for (const marker of record.markers) {
+    marker.material.color.set(lit ? 0xffb000 : 0xb7b1a6);
+    marker.material.opacity = lit ? 1 : 0.28;
+    marker.scale.setScalar(lit ? 2.1 : 1);
+  }
+  record.light.intensity = lit ? 22 : 0;
+  for (const mesh of record.meshes) paintMesh(mesh, lit);
+}
+
+function refresh() {
+  for (const channel of plan.channels) applyChannel(channel);
+  for (const post of plan.posts) {
+    const mesh = switchMeshes.get(post.mesh) || switchMeshes.get(sanitizeNodeName(post.mesh || "")) || switchMeshes.get(post.id);
+    if (!mesh) continue;
+    const active = post.keys.some((key) => keyChannels(key).some((id) => on.has(id)));
+    paintMesh(mesh, active);
+  }
+  for (const button of postsEl.querySelectorAll(".key")) {
+    const channels = (button.dataset.channels || "").split(",").filter(Boolean);
+    button.classList.toggle("on", channels.some((id) => on.has(id)));
+  }
+}
+
+function describe(channelId) {
+  const posts = plan.posts.filter((post) => post.keys.some((key) => keyChannels(key).includes(channelId)));
+  const names = posts.map((post) => `${post.id} · ${post.place}`);
+  return names.length ? names.join("; ") : "пост не назначен";
+}
+
+function selectFixture(channelId, fixtureId) {
+  const channel = channelById.get(channelId);
+  picked.textContent = `${fixtureId || channelId}. ${channel.title}. Включают: ${describe(channelId)}.`;
+  const post = plan.posts.find((item) => item.keys.some((key) => keyChannels(key).includes(channelId)));
+  focusPost(post);
+}
+
+function focusPost(post) {
+  for (const block of postsEl.querySelectorAll(".post")) {
+    block.classList.toggle("active", block.dataset.id === post?.id);
+  }
+  const block = postsEl.querySelector(`[data-id="${post?.id}"]`);
+  if (block) block.scrollIntoView({ block: "nearest" });
+}
+
+function toggleKey(post, key) {
+  focusPost(post);
+  if (key.action === "all-off") {
+    on.clear();
+    picked.textContent = `${post.id} · ${post.place}: мастер погасил выбранные каналы. Холодильник, сеть и инженерия этой кнопкой не управляются.`;
+    refresh();
+    return;
+  }
+  const channels = keyChannels(key);
+  const anyOn = channels.some((id) => on.has(id));
+  for (const id of channels) {
+    if (anyOn) on.delete(id);
+    else on.add(id);
+  }
+  const titles = channels.map((id) => channelById.get(id)?.title || id).join(", ");
+  const state = anyOn ? "погашен" : "включён";
+  const guess = key.assumption ? " Предположение, не ответ АДС." : "";
+  picked.textContent = `${post.id} · ${key.label}: ${titles} ${state}.${guess}`;
+  refresh();
+}
+
+function pressMesh(name) {
+  const post = postsByMesh.get(name);
+  if (!post) return;
+  const lightKeys = post.keys.filter((key) => keyChannels(key).length);
+  if (lightKeys.length === 1 && post.keys.length === 1) {
+    toggleKey(post, lightKeys[0]);
+    return;
+  }
+  focusPost(post);
+  const labels = post.keys.map((key) => key.label).join(", ");
+  picked.textContent = `${post.id} · ${post.place}. Клавиш в предложении: ${labels}. Нажмите нужную в списке справа.`;
+}
+
+function addRing(position, color, normal, meshKey) {
   const ring = new THREE.Mesh(
-    new THREE.RingGeometry(0.06, 0.105, 40),
+    new THREE.RingGeometry(0.055, 0.095, 36),
     new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, depthTest: false })
   );
-  ring.position.copy(position).add(open.clone().multiplyScalar(0.03));
-  ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), open.clone().normalize());
-  ring.userData.postId = postId;
-  ring.renderOrder = 2;
+  ring.position.copy(position);
+  ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal.clone().normalize());
+  ring.renderOrder = 4;
+  ring.userData.meshKey = meshKey;
   scene.add(ring);
-  clickable.push(ring);
-  return ring;
 }
 
-function addHitBox(position, postId) {
-  const hit = new THREE.Mesh(
-    new THREE.BoxGeometry(0.28, 0.28, 0.28),
-    new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+function placeSheetPost(post) {
+  const facing = new THREE.Vector3(...(post.facing || [0, 0, 1])).normalize();
+  const alongX = Math.abs(facing.x) > 0.5;
+  const plate = new THREE.Mesh(
+    new THREE.BoxGeometry(alongX ? 0.012 : 0.081, 0.081, alongX ? 0.081 : 0.012),
+    new THREE.MeshStandardMaterial({ color: 0xd4d0c6, roughness: 0.35, emissive: 0x000000 })
   );
-  hit.position.copy(position);
-  hit.userData.postId = postId;
-  scene.add(hit);
-  clickable.push(hit);
+  const keycap = new THREE.Mesh(
+    new THREE.BoxGeometry(alongX ? 0.008 : 0.026, 0.058, alongX ? 0.026 : 0.008),
+    new THREE.MeshStandardMaterial({ color: 0x2c2a28, roughness: 0.4, emissive: 0x000000 })
+  );
+  plate.name = post.id;
+  plate.position.set(post.at[0], post.at[1], post.at[2]);
+  keycap.position.copy(facing).multiplyScalar(0.004);
+  plate.add(keycap);
+  scene.add(plate);
+  bindSwitch(plate, post);
+  const ringAt = plate.position.clone().add(facing.clone().multiplyScalar(0.02));
+  addRing(ringAt, 0x2f7d4f, facing, plate.name);
+  if (post.status === ASK) addRing(ringAt, 0xe07a2f, facing, plate.name);
 }
 
-function worldCenter(object) {
-  return new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-}
-
-function thinNormal(object) {
-  const size = new THREE.Box3().setFromObject(object).getSize(new THREE.Vector3());
-  if (size.x <= size.y && size.x <= size.z) return new THREE.Vector3(1, 0, 0);
-  if (size.z <= size.x && size.z <= size.y) return new THREE.Vector3(0, 0, 1);
-  return new THREE.Vector3(0, 1, 0);
-}
-
-function tintLocked(root, color, emissive, intensity) {
-  root.traverse((node) => {
-    if (!node.isMesh) return;
-    const source = Array.isArray(node.material) ? node.material : [node.material];
-    const next = source.map((material) => {
-      const clone = material.clone();
-      clone.color = new THREE.Color(color);
-      if (clone.emissive) {
-        clone.emissive = new THREE.Color(emissive);
-        clone.emissiveIntensity = intensity;
-      }
-      return clone;
-    });
-    node.material = Array.isArray(node.material) ? next : next[0];
-    node.userData.tintLocked = true;
-  });
-}
-
-function highlightObject(root) {
-  root.traverse((node) => {
-    if (!node.isMesh || node.userData.tintLocked) return;
-    const previous = node.material;
-    const source = Array.isArray(previous) ? previous : [previous];
-    const next = source.map((material) => {
-      const clone = material.clone();
-      if (clone.emissive) {
-        clone.emissive = new THREE.Color(0xe6c36a);
-        clone.emissiveIntensity = 0.85;
-      }
-      return clone;
-    });
-    node.material = Array.isArray(previous) ? next : next[0];
-    restorations.push({ node, previous });
-  });
-}
-
-function clearHighlight() {
-  for (const item of restorations) {
-    const current = item.node.material;
-    item.node.material = item.previous;
-    const list = Array.isArray(current) ? current : [current];
-    list.forEach((material) => material.dispose());
-  }
-  restorations.length = 0;
-  for (const marker of channelMarkers) {
-    marker.scale.setScalar(1);
-    marker.material.emissiveIntensity = 0.45;
-  }
-}
-
-function resolveObject(name) {
-  if (!name) return null;
-  if (byName.has(name)) return byName.get(name);
-  // Three.js чистит имя узла glTF: пробелы становятся «_», точки убираются.
-  const sanitized = name.replace(/\s/g, "_").replace(/[.]/g, "");
-  if (byName.has(sanitized)) return byName.get(sanitized);
-  return null;
-}
-
-function channelById(id) {
-  return (layout.channels || []).find((channel) => channel.id === id);
-}
-
-function postById(id) {
-  return layout.posts.find((post) => post.id === id);
-}
-
-function channelsOf(post) {
-  const ids = [];
-  for (const key of post.keys || []) {
-    for (const id of key.channels || []) {
-      if (!ids.includes(id)) ids.push(id);
-    }
-  }
-  return ids;
-}
-
-function applySelection() {
-  clearHighlight();
-  const ids = [];
-  if (selectedPost) ids.push(...channelsOf(selectedPost));
-  if (selectedChannel && !ids.includes(selectedChannel)) ids.push(selectedChannel);
-  for (const id of ids) {
-    const channel = channelById(id);
-    if (!channel) continue;
-    for (const name of channel.meshes || []) {
-      const object = resolveObject(name);
-      if (object) highlightObject(object);
-    }
-  }
-  const active = new Set(ids);
-  for (const marker of channelMarkers) {
-    const on = active.has(marker.userData.channelId);
-    marker.scale.setScalar(on ? 1.7 : 1);
-    marker.material.emissiveIntensity = on ? 1.5 : 0.45;
-  }
-  renderDetail();
-  renderPosts();
-  renderChannels();
-}
-
-function openSide(point, axis) {
-  const fallback = axis.clone().normalize();
-  if (!apartment) return fallback;
-  let best = fallback;
-  let bestDist = -1;
-  for (const sign of [1, -1]) {
-    const dir = fallback.clone().multiplyScalar(sign);
-    raycaster.set(point, dir);
-    raycaster.far = 3.5;
-    const hits = raycaster.intersectObject(apartment, true);
-    const clear = hits.find((hit) => hit.distance > 0.04);
-    const dist = clear ? clear.distance : 3.5;
-    if (dist > bestDist) {
-      bestDist = dist;
-      best = dir;
-    }
-  }
-  raycaster.far = Infinity;
-  return best;
-}
-
-function focusOn(point, facing) {
-  const axis = facing ? facing.clone() : new THREE.Vector3(0.4, 0, 1);
-  const open = openSide(point, axis);
-  const eye = point.clone().add(open.multiplyScalar(1.05)).add(new THREE.Vector3(0, 0.38, 0));
-  goal.target = point.clone();
-  goal.pos = eye;
-  camera.position.copy(eye);
-  controls.target.copy(point);
-}
-
-function selectPost(id, options = {}) {
-  const post = postById(id);
-  if (!post) return;
-  selectedPost = post;
-  selectedChannel = null;
-  if (options.focus !== false) {
-    const point = post.object ? worldCenter(post.object) : new THREE.Vector3(...post.at);
-    const facing = post.facing
-      ? new THREE.Vector3(...post.facing)
-      : (post.object ? thinNormal(post.object) : new THREE.Vector3(0, 0, 1));
-    focusOn(point, facing);
-  }
-  applySelection();
-  const button = postsEl.querySelector(`[data-post="${CSS.escape(id)}"]`);
-  if (button) button.scrollIntoView({ block: "nearest" });
-}
-
-function selectChannel(id) {
-  selectedChannel = id;
-  selectedPost = null;
-  const channel = channelById(id);
-  const marker = channelMarkers.find((item) => item.userData.channelId === id);
-    if (marker) focusOn(marker.position.clone());
-  else if (channel && channel.meshes && channel.meshes.length) {
-    const object = resolveObject(channel.meshes[0]);
-    if (object) focusOn(worldCenter(object));
-  }
-  applySelection();
-}
-
-function renderPosts() {
-  const rooms = [];
-  for (const post of layout.posts) {
-    if (filter === "ask" && post.status !== ASK) continue;
-    if (filter === "sheet" && !isSheet(post)) continue;
-    if (!rooms.includes(post.room)) rooms.push(post.room);
-  }
-  postsEl.replaceChildren();
-  if (!rooms.length) {
-    const empty = document.createElement("p");
-    empty.className = "note";
-    empty.textContent = "Таких постов нет.";
-    postsEl.appendChild(empty);
-    return;
-  }
-  for (const room of rooms) {
-    const heading = document.createElement("h2");
-    heading.textContent = room;
-    postsEl.appendChild(heading);
-    for (const post of layout.posts) {
-      if (post.room !== room) continue;
-      if (filter === "ask" && post.status !== ASK) continue;
-      if (filter === "sheet" && !isSheet(post)) continue;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "post";
-      if (post.status === ASK) button.classList.add("ask");
-      if (isSheet(post)) button.classList.add("sheet");
-      if (selectedPost && selectedPost.id === post.id) button.classList.add("active");
-      button.dataset.post = post.id;
-      const title = document.createElement("span");
-      title.textContent = postName(post) + " · " + post.title;
-      button.appendChild(title);
-      if (post.status === ASK) {
-        const badge = document.createElement("span");
-        badge.className = "badge ask";
-        badge.textContent = ASK;
-        button.appendChild(badge);
-      } else if (isSheet(post)) {
-        const badge = document.createElement("span");
-        badge.className = "badge sheet";
-        badge.textContent = "по листу 10";
-        button.appendChild(badge);
-      }
-      const meta = document.createElement("small");
-      meta.textContent = gangsWord(post.gangs || 1);
-      button.appendChild(meta);
-      button.addEventListener("click", () => selectPost(post.id));
-      postsEl.appendChild(button);
-    }
-  }
-}
-
-function renderChannels() {
-  channelsEl.replaceChildren();
-  for (const channel of layout.channels || []) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "channel";
-    const linked = selectedPost && channelsOf(selectedPost).includes(channel.id);
-    if (selectedChannel === channel.id || linked) button.classList.add("active");
-    const title = document.createElement("span");
-    title.textContent = channel.id + " · " + channel.title;
-    button.appendChild(title);
-    if (channel.assumption) {
-      const badge = document.createElement("span");
-      badge.className = "badge guess";
-      badge.textContent = "предположение";
-      button.appendChild(badge);
-    }
-    if (channel.note) {
-      const meta = document.createElement("small");
-      meta.textContent = channel.note;
-      button.appendChild(meta);
-    }
-    button.addEventListener("click", () => selectChannel(channel.id));
-    channelsEl.appendChild(button);
-  }
-}
-
-function renderDetail() {
-  const post = selectedPost;
-  const channel = selectedChannel ? channelById(selectedChannel) : null;
-  if (!post && !channel) {
-    detailEl.hidden = true;
-    detailEl.replaceChildren();
-    return;
-  }
-  detailEl.hidden = false;
-  detailEl.replaceChildren();
-  if (post) {
-    const heading = document.createElement("h3");
-    heading.textContent = postName(post);
-    detailEl.appendChild(heading);
-    const place = document.createElement("p");
-    place.className = "meta";
-    place.textContent = post.room + " · " + post.title + " · " + gangsWord(post.gangs || 1);
-    detailEl.appendChild(place);
+function buildPanel() {
+  for (const post of plan.posts) {
+    const block = document.createElement("section");
+    block.className = "post";
+    if (post.status === ASK) block.classList.add("ask");
+    if (!post.mesh) block.classList.add("sheet");
+    block.dataset.id = post.id;
+    const title = document.createElement("h2");
+    title.textContent = `${post.id} · ${post.place}`;
+    block.appendChild(title);
     if (post.status === ASK) {
       const badge = document.createElement("p");
-      badge.innerHTML = "";
-      const span = document.createElement("span");
-      span.className = "badge ask";
-      span.textContent = ASK;
-      badge.appendChild(span);
-      detailEl.appendChild(badge);
-    }
-    if (post.mesh) {
-      const mesh = document.createElement("p");
-      mesh.className = "meta";
-      mesh.textContent = post.object ? "Меш: " + post.mesh : "Меш в модели не найден: " + post.mesh;
-      detailEl.appendChild(mesh);
-    }
-    if (post.at) {
-      const at = document.createElement("p");
-      at.className = "meta";
-      const [x, y, z] = post.at;
-      at.textContent = "Маркер, меша нет: [" + x.toFixed(2) + ", " + y.toFixed(2) + ", " + z.toFixed(2) + "], высота 0,9 м от чистого пола.";
-      detailEl.appendChild(at);
-    }
-    for (const key of post.keys || []) {
-      const line = document.createElement("p");
-      line.className = "meta";
-      const names = (key.channels || []).map((id) => {
-        const item = channelById(id);
-        return item ? id + " — " + item.title : id;
-      });
-      line.textContent = (key.title || "Клавиша") + ": " + (names.join("; ") || "канал не указан");
-      if (key.assumption) {
-        const badge = document.createElement("span");
-        badge.className = "badge guess";
-        badge.textContent = "предположение";
-        line.appendChild(badge);
-      }
-      detailEl.appendChild(line);
-    }
-    if (!(post.keys || []).length) {
-      const empty = document.createElement("p");
-      empty.className = "note";
-      empty.textContent = "Клавиши к каналам не приписаны: для этого поста ведомость 09.11 в раскладке не зафиксирована.";
-      detailEl.appendChild(empty);
+      badge.className = "badge-ask";
+      badge.textContent = post.status;
+      block.appendChild(badge);
     }
     if (post.note) {
       const note = document.createElement("p");
+      note.className = "note";
       note.textContent = post.note;
-      detailEl.appendChild(note);
+      block.appendChild(note);
     }
-    return;
+    const keys = document.createElement("div");
+    keys.className = "keys";
+    for (const key of post.keys) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "key";
+      button.textContent = key.assumption ? `${key.label} · предположение` : key.label;
+      button.dataset.channels = keyChannels(key).join(",");
+      button.addEventListener("click", () => toggleKey(post, key));
+      keys.appendChild(button);
+    }
+    block.appendChild(keys);
+    postsEl.appendChild(block);
   }
-  const heading = document.createElement("h3");
-  heading.textContent = channel.id;
-  detailEl.appendChild(heading);
-  const title = document.createElement("p");
-  title.className = "meta";
-  title.textContent = channel.title;
-  detailEl.appendChild(title);
-  if (channel.assumption) {
-    const badge = document.createElement("p");
-    const span = document.createElement("span");
-    span.className = "badge guess";
-    span.textContent = "предположение";
-    badge.appendChild(span);
-    detailEl.appendChild(badge);
-  }
-  if (channel.note) {
-    const note = document.createElement("p");
-    note.textContent = channel.note;
-    detailEl.appendChild(note);
-  }
-  const owners = layout.posts.filter((item) => channelsOf(item).includes(channel.id));
-  const who = document.createElement("p");
-  who.className = "meta";
-  who.textContent = owners.length
-    ? "Включают: " + owners.map(postName).join(", ")
-    : "Ни одна клавиша на этот канал не ведёт.";
-  detailEl.appendChild(who);
 }
-
-function renderLayout() {
-  statusEl.textContent = layout.status;
-  renderPosts();
-  renderChannels();
-}
-
-document.getElementById("filters").addEventListener("click", (event) => {
-  const button = event.target.closest("button");
-  if (!button) return;
-  filter = button.dataset.filter;
-  for (const item of document.querySelectorAll("#filters button")) {
-    item.setAttribute("aria-pressed", item === button ? "true" : "false");
-  }
-  renderPosts();
+buildPanel();
+document.getElementById("all-off").addEventListener("click", () => {
+  on.clear();
+  picked.textContent = "Весь показанный свет погашен.";
+  refresh();
 });
 
-document.getElementById("home").addEventListener("click", () => {
-  selectedPost = null;
-  selectedChannel = null;
-  goal.pos = home.pos.clone();
-  goal.target = home.target.clone();
-  applySelection();
+const loader = new GLTFLoader();
+const draco = new DRACOLoader();
+draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+loader.setDRACOLoader(draco);
+
+loader.load("model/apartment.glb", (gltf) => {
+  scene.add(gltf.scene);
+  const byName = new Map();
+  gltf.scene.traverse((object) => {
+    if (object.isMesh && object.name) byName.set(object.name, object);
+  });
+  for (const post of plan.posts) {
+    if (!post.mesh) {
+      if (post.at) placeSheetPost(post);
+      continue;
+    }
+    const mesh = findMesh(byName, post.mesh);
+    if (!mesh) continue;
+    bindSwitch(mesh, post);
+    if (post.status === ASK) {
+      const box = new THREE.Box3().setFromObject(mesh);
+      const center = box.getCenter(new THREE.Vector3());
+      const size = box.getSize(new THREE.Vector3());
+      const normal = size.x <= size.z ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
+      addRing(center, 0xe07a2f, normal, mesh.name);
+    }
+  }
+  for (const channel of plan.channels) {
+    const record = ensureChannel(channel);
+    for (const name of channel.meshes || []) {
+      const mesh = findMesh(byName, name);
+      if (!mesh) continue;
+      cloneMaterial(mesh);
+      mesh.material.userData.baseIntensity = mesh.material.emissiveIntensity ?? 1;
+      mesh.userData.channel = channel.id;
+      record.meshes.push(mesh);
+    }
+    if (record.meshes.length) {
+      const box = new THREE.Box3();
+      for (const marker of record.markers) box.expandByPoint(marker.getWorldPosition(new THREE.Vector3()));
+      for (const mesh of record.meshes) box.expandByObject(mesh);
+      if (!box.isEmpty()) box.getCenter(record.light.position);
+    }
+  }
+  const box = new THREE.Box3().setFromObject(gltf.scene);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  controls.target.copy(center);
+  camera.position.set(center.x + size.x * 0.15, center.y + size.y * 1.35, center.z + size.z * 0.72);
+  controls.update();
+  refresh();
+  status.textContent = plan.status;
+}, undefined, (error) => {
+  status.textContent = "Модель не открылась. Страницу нужно смотреть через локальный адрес сайта, не как файл с диска.";
+  console.error(error);
 });
 
-let pointerDown = null;
 renderer.domElement.addEventListener("pointerdown", (event) => {
-  pointerDown = { x: event.clientX, y: event.clientY };
+  downX = event.clientX;
+  downY = event.clientY;
 });
 renderer.domElement.addEventListener("pointerup", (event) => {
-  if (!pointerDown) return;
-  const dx = event.clientX - pointerDown.x;
-  const dy = event.clientY - pointerDown.y;
-  pointerDown = null;
-  if (dx * dx + dy * dy > 25) return;
+  if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
   const rect = renderer.domElement.getBoundingClientRect();
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(clickable, true);
-  if (!hits.length) return;
-  const postId = findData(hits[0].object, "postId");
-  const channelId = findData(hits[0].object, "channelId");
-  if (postId) selectPost(postId);
-  else if (channelId) selectChannel(channelId);
+  const hits = raycaster.intersectObjects(scene.children, true);
+  for (const hit of hits) {
+    let object = hit.object;
+    while (object) {
+      if (object.userData.meshKey && (switchMeshes.has(object.userData.meshKey) || postsByMesh.has(object.userData.meshKey))) {
+        pressMesh(object.userData.meshKey);
+        return;
+      }
+      if (object.userData.post && switchMeshes.has(object.name)) {
+        pressMesh(object.name);
+        return;
+      }
+      if (object.userData.channel && object.userData.fixture) {
+        selectFixture(object.userData.channel, object.userData.fixture);
+        return;
+      }
+      if (object.userData.channel && object.isMesh && !object.userData.fixture) {
+        selectFixture(object.userData.channel, object.name);
+        return;
+      }
+      object = object.parent;
+    }
+  }
 });
 
-function placeSheetPost(post) {
-  const facing = new THREE.Vector3(...(post.facing || [0, 0, 1])).normalize();
-  const group = new THREE.Group();
-  group.position.set(post.at[0], post.at[1], post.at[2]);
-  const alongX = Math.abs(facing.x) > 0.5;
-  const plate = new THREE.Mesh(
-    new THREE.BoxGeometry(alongX ? 0.012 : 0.081, 0.081, alongX ? 0.081 : 0.012),
-    new THREE.MeshStandardMaterial({ color: 0xd4d0c6, roughness: 0.32 })
-  );
-  const key = new THREE.Mesh(
-    new THREE.BoxGeometry(alongX ? 0.008 : 0.026, 0.058, alongX ? 0.026 : 0.008),
-    new THREE.MeshStandardMaterial({ color: 0x2c2a28, roughness: 0.4 })
-  );
-  key.position.copy(facing.clone().multiplyScalar(0.004));
-  plate.userData.postId = post.id;
-  key.userData.postId = post.id;
-  group.add(plate, key);
-  group.userData.postId = post.id;
-  scene.add(group);
-  clickable.push(group);
-  addHitBox(group.position, post.id);
-  addRing(group.position.clone(), 0x2f7d4f, facing, post.id);
-  const label = makeLabel(post.code || post.id, "#d7f5e4");
-  label.position.copy(group.position).add(new THREE.Vector3(0, 0.16, 0));
-  scene.add(label);
-  post.object = group;
-}
-
-function placeChannelMarkers() {
-  const material = new THREE.MeshStandardMaterial({
-    color: 0xf3d78a,
-    emissive: 0xe6c36a,
-    emissiveIntensity: 0.45,
-    roughness: 0.4
-  });
-  for (const channel of layout.channels || []) {
-    const markers = channel.markers || [];
-    markers.forEach((marker, index) => {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.07, 20, 16), material.clone());
-      mesh.position.set(marker.at[0], marker.at[1], marker.at[2]);
-      mesh.userData.channelId = channel.id;
-      scene.add(mesh);
-      clickable.push(mesh);
-      channelMarkers.push(mesh);
-      if (index === 0) {
-        const label = makeLabel(channel.id, "#ffe7a3");
-        label.position.copy(mesh.position).add(new THREE.Vector3(0, 0.16, 0));
-        scene.add(label);
-      }
-    });
-  }
-}
-
-function bindPosts(missing) {
-  for (const post of layout.posts) {
-    if (post.mesh) {
-      const object = resolveObject(post.mesh);
-      if (!object) {
-        missing.push(post.mesh);
-        continue;
-      }
-      object.userData.postId = post.id;
-      object.traverse((node) => {
-        node.userData.postId = post.id;
-      });
-      clickable.push(object);
-      post.object = object;
-      const center = worldCenter(object);
-      const normal = thinNormal(object);
-      addHitBox(center, post.id);
-      if (post.status === ASK) {
-        tintLocked(object, 0xe07a2f, 0xc45c12, 0.7);
-        addRing(center, 0xe07a2f, normal, post.id);
-        const label = makeLabel(postName(post), "#ffd7b8");
-        label.position.copy(center).add(new THREE.Vector3(0, 0.16, 0));
-        scene.add(label);
-      }
-    } else if (isSheet(post)) {
-      placeSheetPost(post);
-    }
-  }
-}
-
-function frameHome() {
-  const box = new THREE.Box3();
-  for (const object of byName.values()) box.expandByObject(object);
-  if (box.isEmpty()) return;
-  const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  const distance = Math.max(size.x, size.z) * 0.72;
-  home = {
-    pos: new THREE.Vector3(center.x + distance * 0.15, center.y + distance * 0.85, center.z + distance * 0.95),
-    target: new THREE.Vector3(center.x, 1.0, center.z)
-  };
-  camera.position.copy(home.pos);
-  controls.target.copy(home.target);
-}
-
-async function main() {
-  const response = await fetch("model/группы-света.json", { cache: "no-store" });
-  if (!response.ok) throw new Error("model/группы-света.json не прочитан (" + response.status + ")");
-  layout = await response.json();
-  renderLayout();
-
-  const draco = new DRACOLoader();
-  draco.setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/libs/draco/gltf/");
-  const loader = new GLTFLoader();
-  loader.setDRACOLoader(draco);
-  const gltf = await loader.loadAsync("model/apartment.glb");
-  const model = gltf.scene;
-  scene.add(model);
-  apartment = model;
-  model.traverse((node) => {
-    if (node.name) byName.set(node.name, node);
-  });
-
-  const missing = [];
-  bindPosts(missing);
-  for (const channel of layout.channels || []) {
-    for (const name of channel.meshes || []) {
-      if (!resolveObject(name)) missing.push(name);
-    }
-  }
-  placeChannelMarkers();
-  frameHome();
-  const hash = decodeURIComponent(location.hash.replace(/^#/, ""));
-  if (hash && postById(hash)) selectPost(hash);
-  else if (hash && channelById(hash)) selectChannel(hash);
-  loadEl.textContent = missing.length
-    ? "Модель открыта. Не найдены: " + missing.join(", ")
-    : "Модель открыта. Выберите пост.";
-}
-
-main().catch((error) => {
-  console.error(error);
-  loadEl.textContent = "Не удалось открыть раскладку: " + error.message;
-  statusEl.textContent = "Не удалось открыть раскладку.";
-});
-
-window.__svet = {
-  selectPost,
-  selectChannel,
-  camera,
-  renderer,
-  scene,
-  project(id) {
-    const post = postById(id);
-    if (!post) return null;
-    const point = post.object ? worldCenter(post.object) : new THREE.Vector3(...post.at);
-    const vector = point.clone().project(camera);
-    const rect = renderer.domElement.getBoundingClientRect();
-    return {
-      x: rect.left + (vector.x * 0.5 + 0.5) * rect.width,
-      y: rect.top + (vector.y * -0.5 + 0.5) * rect.height,
-      behind: vector.z > 1
-    };
-  },
-  ready() {
-    return loadEl.textContent;
-  }
-};
-
-function animate() {
-  requestAnimationFrame(animate);
-  if (goal.pos) {
-    camera.position.lerp(goal.pos, 0.12);
-    controls.target.lerp(goal.target, 0.12);
-    if (camera.position.distanceTo(goal.pos) < 0.02) {
-      camera.position.copy(goal.pos);
-      controls.target.copy(goal.target);
-      goal.pos = null;
-      goal.target = null;
-    }
-  }
+function frame() {
   controls.update();
   renderer.render(scene, camera);
+  requestAnimationFrame(frame);
 }
-animate();
+frame();
 </script>
 </body>
 </html>
